@@ -11,7 +11,6 @@ OUTPUT_FILE  = 'arduino_data.csv'
 def main():
     ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
     print(f"Connected to {SERIAL_PORT} at {BAUD_RATE} baud.")
-    
     data = []
 
     try:
@@ -24,21 +23,23 @@ def main():
             try:
                 analog = int(raw)
             except ValueError:
-                # Skip any non‐numeric lines
+                # Skip any non-numeric lines
                 print("Non-numeric data, skipping:", repr(raw))
                 continue
 
-            ts = time.time()
-            # Print with 3 decimal places on the timestamp
-            print(f"{ts:.3f}, {analog}")
-            data.append([ts, analog])
-    
+            # Timestamp in integer milliseconds
+            ts_ms = int(time.time() * 1000)
+
+            # Print with semicolon so you can also copy/paste easily
+            print(f"{ts_ms};{analog}")
+            data.append([ts_ms, analog])
+
     except KeyboardInterrupt:
         print("\nInterrupted. Saving data...")
 
         with open(OUTPUT_FILE, 'w', newline='') as f:
             writer = csv.writer(f, delimiter=';')
-            writer.writerow(['timestamp', 'analog_value'])
+            writer.writerow(['timestamp_ms', 'analog_value'])
             writer.writerows(data)
 
         print(f"Data saved to {OUTPUT_FILE}")
