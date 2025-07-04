@@ -3,9 +3,9 @@ import time
 import csv
 
 # ---- CONFIGURE THIS ----
-SERIAL_PORT = 'COM3'  # Replace with your port, e.g., 'COM3' on Windows or '/dev/ttyUSB0' on Linux/Mac
-BAUD_RATE = 115200
-OUTPUT_FILE = 'arduino_data.csv'
+SERIAL_PORT = 'COM3'      # e.g., 'COM3' on Windows or '/dev/ttyUSB0' on Linux/Mac
+BAUD_RATE    = 115200
+OUTPUT_FILE  = 'arduino_data.csv'
 # ------------------------
 
 def main():
@@ -20,16 +20,24 @@ def main():
         print("Reading... Press Ctrl+C to stop and save.")
 
         while True:
-            line = ser.readline().decode('utf-8').strip()
-            timestamp = time.time()
-            print(f"{timestamp}, {line}")
-            data.append([timestamp, line])
+            raw = ser.readline().decode('utf-8').strip()
+            try:
+                analog = int(raw)
+            except ValueError:
+                # Skip any non‐numeric lines
+                print("Non-numeric data, skipping:", repr(raw))
+                continue
+
+            ts = time.time()
+            # Print with 3 decimal places on the timestamp
+            print(f"{ts:.3f}, {analog}")
+            data.append([ts, analog])
     
     except KeyboardInterrupt:
         print("\nInterrupted. Saving data...")
 
         with open(OUTPUT_FILE, 'w', newline='') as f:
-            writer = csv.writer(f)
+            writer = csv.writer(f, delimiter=';')
             writer.writerow(['timestamp', 'analog_value'])
             writer.writerows(data)
 
